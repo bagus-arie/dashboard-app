@@ -7,6 +7,13 @@ export class AlatRepository {
     this.fetch = fetch;
   }
 
+ async getAllbyAlat(): Promise<ApiResponse> {
+    return this.fetch<ApiResponse>("", {
+      method: "GET",
+    });
+  }
+
+
   async getbyAlat(namaAlat : string): Promise<ApiResponse[]> {
     return this.fetch<ApiResponse[]>(`?jenis_alat=${namaAlat}`, {
       method: "GET",
