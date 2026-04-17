@@ -1,16 +1,22 @@
 <script lang="ts" setup>
 import { useColorMode } from '#imports'
+// Hapus import BulletLegendItemInterface jika membuat error
 
 defineOptions({
   tags: ['areacharts', 'multiplelines']
 })
 
-withDefaults(
+// 1. TAMBAHKAN PROPS CATEGORIES
+const props = withDefaults(
   defineProps<{
     showTitle?: boolean
+    data: any[]
+    categories: any // Menerima konfigurasi warna & nama dari halaman utama
   }>(),
   {
-    showTitle: false
+    showTitle: false,
+    data: () => [],
+    categories: () => ({})
   }
 )
 
@@ -21,63 +27,22 @@ const { height } = useResponsiveHeight({
 
 const colorMode = useColorMode()
 
-interface AreaChartItem {
-  date: string
-  desktop: number
-  mobile: number
-}
-
-const categories: ComputedRef<Record<string, BulletLegendItemInterface>>
-  = computed(() => ({
-    desktop: {
-      name: 'Desktop',
-      color: '#3b82f6'
-    },
-    mobile: {
-      name: 'Mobile',
-      color: '#22c55e'
-    }
-  }))
-
-const AreaChartData: AreaChartItem[] = [
-  { date: '2024-04-01', desktop: 75, mobile: 50 },
-  { date: '2024-04-02', desktop: 125, mobile: 100 },
-  { date: '2024-04-03', desktop: 167, mobile: 120 },
-  { date: '2024-04-04', desktop: 260, mobile: 240 },
-  { date: '2024-04-05', desktop: 240, mobile: 290 }
-]
-
 const xFormatter = (tick: number): string => {
-  return `${AreaChartData[tick]?.date}`
+  return `${props.data[tick]?.date || ''}`
 }
 </script>
 
 <template>
-  <div
-    class="mx-auto max-w-3xl space-y-6 rounded-lg"
-    :class="showTitle ? 'p-6' : ''"
-  >
-    <div
-      v-if="showTitle"
-      class="flex items-center justify-between"
-    >
-      <h3 class="text-lg font-semibold">
-        Area Chart
-      </h3>
-      <NuxtLink to="/blocks/area-charts">
-        <UButton
-          icon="i-lucide-copy"
-          size="sm"
-          variant="soft"
-          color="neutral"
-        />
-      </NuxtLink>
+  <div class="mx-auto w-full space-y-6 rounded-lg" :class="showTitle ? 'p-6' : ''">
+    <div v-if="showTitle" class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-white">Grafik Monitoring</h3>
     </div>
+    
     <AreaChart
       :key="colorMode.value"
-      :data="AreaChartData"
+      :data="props.data"
       :height="height"
-      :categories="categories"
+      :categories="props.categories"
       :y-grid-line="true"
       :x-formatter="xFormatter"
       :curve-type="CurveType.MonotoneX"
