@@ -1,3 +1,5 @@
+import { useAlatStore } from '~/stores/alatStore'
+
 // ==========================================
 // Data Types
 // ==========================================
@@ -131,7 +133,7 @@ const gedungIGD: Building = {
           flex: 2,
           installations: [
             {
-              id: 'igd-7-r1-kb1', name: 'Kompresor Bebicon 1', type: 'kompresor',
+              id: 'igd-7-r1-kb1', name: 'kompressor atlas alfa', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-15',
               dailyCount: 1, monthlyCount: 24,
               posX: 8, posY: 12, posW: 68, posH: 18,
@@ -262,7 +264,7 @@ const gedungIGD: Building = {
           flex: 1,
           installations: [
             {
-              id: 'igd-2-r1-vb1', name: 'Vakum Busch 1', type: 'vakum',
+              id: 'igd-2-r1-vb1', name: 'vakum busch alfa', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-10',
               dailyCount: 1, monthlyCount: 28,
               posX: 5, posY: 14, posW: 32, posH: 16,
@@ -356,7 +358,7 @@ const gedungNICU: Building = {
               posX: 72, posY: 8, posW: 18, posH: 14,
             },
             {
-              id: 'nicu-4-r1-ac1', name: 'Komp Atlas Copco 1', type: 'kompresor',
+              id: 'nicu-4-r1-ac1', name: 'kompressor atlas alfa', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-02-15',
               dailyCount: 1, monthlyCount: 28,
               posX: 8, posY: 30, posW: 65, posH: 22,
@@ -402,7 +404,7 @@ const ruangPICU: Building = {
           flex: 1,
           installations: [
             {
-              id: 'picu-1-r1-v2', name: 'Vakum 2', type: 'vakum',
+              id: 'picu-1-r1-v2', name: 'vakum mils alfa', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-18',
               dailyCount: 1, monthlyCount: 24,
               posX: 28, posY: 52, posW: 18, posH: 34,
@@ -497,10 +499,40 @@ const buildings: Building[] = [gedungIGD, gedungNICU, ruangPICU, grandPavilliun]
 // ==========================================
 
 export const useBuildings = () => {
-  const getBuildings = (): Building[] => buildings
+  const getDynamicStatus = (name: string, defaultStatus: Installation['status']): Installation['status'] => {
+    const alatStore = useAlatStore()
+    const records = alatStore.dataAlat.filter(i => (i['Jenis Alat'] || '').toLowerCase().includes(name.toLowerCase()))
+    if (records.length === 0) return defaultStatus
+
+    // Sort by timestamp (latest first)
+    const latest = [...records].sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())[0]
+    const pekerjaan = (latest['Jenis Pekerjaan'] || '').toLowerCase()
+
+    if (pekerjaan.includes('pemeriksaan')) return 'baik'
+    if (pekerjaan.includes('pemeliharaan') || pekerjaan.includes('perbaikan') || pekerjaan.includes('ganti')) return 'perlu_perhatian'
+    
+    return defaultStatus
+  }
+
+  const getBuildings = (): Building[] => {
+    return buildings.map(building => ({
+      ...building,
+      floors: building.floors.map(floor => ({
+        ...floor,
+        rooms: floor.rooms.map(room => ({
+          ...room,
+          installations: room.installations.map(inst => ({
+            ...inst,
+            status: getDynamicStatus(inst.name, inst.status)
+          }))
+        }))
+      }))
+    }))
+  }
 
   const getBuildingById = (id: string): Building | undefined => {
-    return buildings.find((b) => b.id === id)
+    const b = getBuildings().find((b) => b.id === id)
+    return b
   }
 
   const getFloor = (buildingId: string, floorId: number): Floor | undefined => {
@@ -569,13 +601,32 @@ export const useBuildings = () => {
     }
   }
 
-  const getInstallationRecords = (installationId: string): MaintenanceRecord[] => {
+  const getInstallationRecords = (installationId: string) => {
+    const alatStore = useAlatStore()
     const allInstallations = buildings.flatMap((b) =>
       b.floors.flatMap((f) => f.rooms.flatMap((r) => r.installations))
     )
     const inst = allInstallations.find((i) => i.id === installationId)
     if (!inst) return []
-    return generateMockRecords(inst.name)
+
+    // Map data from spreadsheet
+    // We try to match by name (case insensitive) or type
+    return alatStore.dataAlat
+      .filter((item) => {
+        const itemAlat = (item['Jenis Alat'] || '').toLowerCase()
+        const instName = inst.name.toLowerCase()
+        // Primary match: name mentioned in sheet
+        return itemAlat.includes(instName) || instName.includes(itemAlat)
+      })
+      .map((item, index) => ({
+        id: index,
+        date: item.Timestamp,
+        type: (item['Jenis Pekerjaan'] || '').toLowerCase().includes('ganti') ? 'penggantian' : 'pemeliharaan',
+        description: item['Jenis Pekerjaan (Jelaskan part yang diganti / Pekerjaan yang dilakukan)'] || item['Jenis Pekerjaan'],
+        technician: 'Petugas IPSRS', // Placeholder or add to sheet
+        result: (item['Jenis Pekerjaan'] || '').toLowerCase().includes('pemeriksaan') ? 'baik' : 'penggantian_part',
+        raw: item // Keep raw data for technical parameters
+      }))
   }
 
   const getTypeColor = (type: Installation['type']): string => {

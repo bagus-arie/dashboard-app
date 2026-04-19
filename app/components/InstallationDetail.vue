@@ -37,34 +37,42 @@
 
       <v-divider />
 
-      <!-- Summary Stats -->
+      <!-- Summary Stats / Parameter Terakhir -->
       <v-card-text class="pa-5">
-        <v-row dense class="mb-5">
-          <v-col cols="6" sm="3">
-            <div class="mini-stat">
-              <div class="mini-stat-value">{{ installation.dailyCount }}</div>
-              <div class="mini-stat-label">Harian</div>
-            </div>
-          </v-col>
-          <v-col cols="6" sm="3">
-            <div class="mini-stat">
-              <div class="mini-stat-value">{{ installation.monthlyCount }}</div>
-              <div class="mini-stat-label">Bulanan</div>
-            </div>
-          </v-col>
-          <v-col cols="6" sm="3">
-            <div class="mini-stat">
-              <div class="mini-stat-value">{{ formatDate(installation.lastMaintenance) }}</div>
-              <div class="mini-stat-label">Pemeliharaan</div>
-            </div>
-          </v-col>
-          <v-col cols="6" sm="3">
-            <div class="mini-stat">
-              <div class="mini-stat-value">{{ formatDate(installation.lastReplacement || '-') }}</div>
-              <div class="mini-stat-label">Penggantian</div>
-            </div>
-          </v-col>
-        </v-row>
+        <template v-if="records.length > 0">
+          <div class="section-label mb-3">
+             <v-icon size="14" color="primary" class="mr-1">mdi-gauge</v-icon>
+             Parameter Terakhir ({{ formatDate(records[0].date) }})
+          </div>
+          <v-row dense class="mb-6">
+            <v-col cols="6" sm="3">
+              <div class="mini-stat">
+                <div class="mini-stat-value">{{ records[0].raw['Hour Meter'] || '-' }}</div>
+                <div class="mini-stat-label">Hour Meter</div>
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="mini-stat">
+                <div class="mini-stat-value">{{ records[0].raw['Pressure On'] || '-' }} / {{ records[0].raw['Pressure Off'] || '-' }}</div>
+                <div class="mini-stat-label">Pressure (On/Off)</div>
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="mini-stat">
+                <div class="mini-stat-value">{{ records[0].raw['Arus R'] || '-' }} / {{ records[0].raw['Arus S'] || '-' }} / {{ records[0].raw['Arus T'] || '-' }}</div>
+                <div class="mini-stat-label">Arus (R/S/T)</div>
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="mini-stat">
+                <div class="mini-stat-value">
+                  {{ records[0].raw['Tegangan L-L (Avg)'] || '-' }} / {{ records[0].raw['Tegangan L-N (Avg)'] || '-' }}
+                </div>
+                <div class="mini-stat-label">Tegangan (L-L / L-N)</div>
+              </div>
+            </v-col>
+          </v-row>
+        </template>
 
         <!-- Table Header -->
         <div class="d-flex align-center justify-space-between mb-3">
@@ -79,35 +87,55 @@
           <thead>
             <tr>
               <th>Tanggal</th>
-              <th>Jenis</th>
-              <th>Deskripsi</th>
-              <th>Teknisi</th>
-              <th>Hasil</th>
+              <th>Pekerjaan</th>
+              <th>Detail</th>
+              <th>Teknisi / Foto</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="record in records" :key="record.id">
-              <td>{{ formatDate(record.date) }}</td>
+              <td class="text-caption">{{ formatDate(record.date) }}</td>
               <td>
                 <v-chip
                   size="x-small"
                   :color="record.type === 'penggantian' ? 'warning' : 'primary'"
                   variant="tonal"
                 >
-                  {{ record.type === 'penggantian' ? 'Penggantian' : 'Pemeliharaan' }}
+                  {{ record.type === 'penggantian' ? 'Ganti Part' : 'Periksa' }}
                 </v-chip>
               </td>
-              <td>{{ record.description }}</td>
-              <td>{{ record.technician }}</td>
+              <td class="text-caption description-cell">{{ record.description }}</td>
               <td>
-                <v-chip
-                  size="x-small"
-                  :color="getResultColor(record.result)"
-                  variant="tonal"
-                >
-                  {{ getResultLabel(record.result) }}
-                </v-chip>
+                <div class="d-flex ga-1">
+                  <v-btn 
+                    v-if="record.raw['Foto Selfie + Time Stamp']"
+                    :href="record.raw['Foto Selfie + Time Stamp']" 
+                    target="_blank" 
+                    icon 
+                    size="x-small" 
+                    variant="text" 
+                    color="primary"
+                    title="Foto Selfie"
+                  >
+                    <v-icon size="16">mdi-camera-account</v-icon>
+                  </v-btn>
+                  <v-btn 
+                    v-if="record.raw['Foto pekerjaan']"
+                    :href="record.raw['Foto pekerjaan']" 
+                    target="_blank" 
+                    icon 
+                    size="x-small" 
+                    variant="text" 
+                    color="success"
+                    title="Foto Pekerjaan"
+                  >
+                    <v-icon size="16">mdi-camera</v-icon>
+                  </v-btn>
+                </div>
               </td>
+            </tr>
+            <tr v-if="records.length === 0">
+              <td colspan="4" class="text-center pa-4 text-grey">Belum ada riwayat untuk alat ini di lokasi ini.</td>
             </tr>
           </tbody>
         </v-table>
@@ -115,7 +143,7 @@
         <div class="mt-4 text-center">
           <v-alert type="info" variant="tonal" density="compact" class="text-caption">
             <v-icon size="16" class="mr-1">mdi-information</v-icon>
-            Data akan terhubung ke Google Sheets webservice
+            Data sinkron dengan Google Sheets (Real-time)
           </v-alert>
         </div>
       </v-card-text>
@@ -240,5 +268,24 @@ function getResultLabel(result: string): string {
 
 .records-table td {
   font-size: 0.82rem !important;
+}
+
+.description-cell {
+  min-width: 250px;
+  max-width: 400px;
+  white-space: pre-line;
+  line-height: 1.4;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
 }
 </style>

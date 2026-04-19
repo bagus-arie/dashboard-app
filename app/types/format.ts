@@ -19,6 +19,7 @@ export interface AlatData {
   "Pressure On": string | number;
   "Pressure Off": string | number;
   "Foto Selfie + Time Stamp": string;
+  "Foto pekerjaan": string;
 }
 
 export interface ApiResponse {

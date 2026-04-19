@@ -10,25 +10,54 @@
         <p class="page-subtitle">Pemeliharaan Instalasi Rumah Sakit</p>
       </div>
 
-      <div class="filter-panel rounded-2xl mb-8 p-5">
-        <div class="filter-item">
-          <label class="custom-label">Dari Tanggal</label>
-          <input type="date" v-model="filterStartDate" class="custom-input rounded-xl p-3">
-        </div>
-        
-        <div class="filter-item">
-          <label class="custom-label">Sampai Tanggal</label>
-          <input type="date" v-model="filterEndDate" class="custom-input rounded-xl p-3">
-        </div>
+      <!-- Filter Panel -->
+      <div class="filter-panel rounded-2xl mb-8">
+        <div class="filter-panel-body">
+          <div class="filter-item">
+            <label class="filter-label">
+              <v-icon size="13" class="mr-1" color="#42A5F5">mdi-calendar-start</v-icon>
+              Dari Tanggal
+            </label>
+            <input type="date" v-model="filterStartDate" class="filter-input rounded-xl">
+          </div>
 
-        <div class="filter-item">
-          <label class="custom-label">Mode Grafik</label>
-          <div class="select-wrapper">
-            <select v-model="chartMode" class="custom-input rounded-xl p-3 appearance-none">
-              <option value="pekerjaan">📊 Statistik Pekerjaan (Periksa vs Pelihara)</option>
-              <option value="alat">🛠️ Statistik Jenis Alat</option>
-            </select>
-            <v-icon class="select-icon" size="20" color="#8b98a9">mdi-chevron-down</v-icon>
+          <div class="filter-divider">
+            <v-icon size="18" color="rgba(255,255,255,0.2)">mdi-arrow-right</v-icon>
+          </div>
+
+          <div class="filter-item">
+            <label class="filter-label">
+              <v-icon size="13" class="mr-1" color="#3EC9A7">mdi-calendar-end</v-icon>
+              Sampai Tanggal
+            </label>
+            <input type="date" v-model="filterEndDate" class="filter-input rounded-xl">
+          </div>
+
+          <div class="filter-separator"></div>
+
+          <div class="filter-item filter-item--chart">
+            <label class="filter-label">
+              <v-icon size="13" class="mr-1" color="#FB8C00">mdi-chart-bar</v-icon>
+              Tampilan Statistik
+            </label>
+            <div class="chart-mode-toggle">
+              <button 
+                class="chart-mode-btn" 
+                :class="{ active: chartMode === 'pekerjaan' }"
+                @click="chartMode = 'pekerjaan'"
+              >
+                <v-icon size="14" class="mr-1">mdi-clipboard-check-outline</v-icon>
+                Per Pekerjaan
+              </button>
+              <button 
+                class="chart-mode-btn" 
+                :class="{ active: chartMode === 'alat' }"
+                @click="chartMode = 'alat'"
+              >
+                <v-icon size="14" class="mr-1">mdi-tools</v-icon>
+                Per Alat
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -47,7 +76,11 @@
           :daily-count="globalSummary.totalDaily"
           :monthly-count="globalSummary.totalMonthly"
           :last-maintenance="globalSummary.lastMaintenance"
+          :last-maintenance-tool="globalSummary.lastMaintenanceTool"
           :last-replacement="globalSummary.lastReplacement"
+          :last-replacement-tool="globalSummary.lastReplacementTool"
+          :recent-maintenance="globalSummary.recentMaintenance"
+          :recent-replacement="globalSummary.recentReplacement"
         />
       </div>
 
@@ -259,26 +292,45 @@ function getSummary(buildingId: string) {
 }
 
 const globalSummary = computed(() => {
-  let totalDaily = 0, totalMonthly = 0, lastMaintenance = '', lastReplacement = ''
+  let totalDaily = 0, totalMonthly = 0
+  let lastMaintenance = '', lastMaintenanceTool = ''
+  let lastReplacement = '', lastReplacementTool = ''
+  
+  // Categorize logs
+  const maintenanceLogs = filteredDataAlat.value
+    .filter(i => (i['Jenis Pekerjaan'] || '').toLowerCase().includes('pemeriksaan'))
+    .sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
 
+  const replacementLogs = filteredDataAlat.value
+    .filter(i => (i['Jenis Pekerjaan'] || '').toLowerCase().includes('pemeliharaan') || (i['Jenis Pekerjaan'] || '').toLowerCase().includes('ganti'))
+    .sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
+
+  // Count daily/monthly
   filteredDataAlat.value.forEach((item: AlatData) => {
-    const itemDate = parseDate(item.Timestamp)
-    const isToday = item.Timestamp.includes(todayStr)
-    const isThisMonth = item.Timestamp.includes(currentMonthStr)
-    const jenisPekerjaan = (item['Jenis Pekerjaan'] || '').toLowerCase()
-
-    if (isToday) totalDaily++
-    if (isThisMonth) totalMonthly++
-
-    if (jenisPekerjaan.includes('pemeriksaan')) {
-      if (!lastMaintenance || itemDate > new Date(lastMaintenance)) lastMaintenance = item.Timestamp
-    }
-    if (jenisPekerjaan.includes('pemeliharaan') || jenisPekerjaan.includes('ganti')) {
-      if (!lastReplacement || itemDate > new Date(lastReplacement)) lastReplacement = item.Timestamp
-    }
+    if (item.Timestamp.includes(todayStr)) totalDaily++
+    if (item.Timestamp.includes(currentMonthStr)) totalMonthly++
   })
 
-  return { totalDaily, totalMonthly, lastMaintenance, lastReplacement }
+  if (maintenanceLogs.length > 0) {
+    lastMaintenance = maintenanceLogs[0].Timestamp
+    lastMaintenanceTool = maintenanceLogs[0]['Jenis Alat']
+  }
+
+  if (replacementLogs.length > 0) {
+    lastReplacement = replacementLogs[0].Timestamp
+    lastReplacementTool = replacementLogs[0]['Jenis Alat']
+  }
+
+  return { 
+    totalDaily, 
+    totalMonthly, 
+    lastMaintenance, 
+    lastMaintenanceTool,
+    lastReplacement, 
+    lastReplacementTool,
+    recentMaintenance: maintenanceLogs.slice(0, 5),
+    recentReplacement: replacementLogs.slice(0, 5)
+  }
 })
 
 function navigateToFloor(buildingId: string, floorId: number) {
@@ -392,92 +444,171 @@ function navigateToFloor(buildingId: string, floorId: number) {
   letter-spacing: 0.3px;
 }
 
-/* Efek Kaca (Glassmorphism) untuk kotak luar */
+/* =====================
+   FILTER PANEL REDESIGN
+   ===================== */
 .filter-panel {
-  /* Efek Glassmorphism Anda (Tetap sama) */
-  background: rgba(30, 41, 59, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
-  /* CSS Tata Letak Horizontal Murni */
-  display: flex;
-  gap: 20px;
-  align-items: flex-end; /* Memastikan kotak sejajar di bawah (karena labelnya ada di atas) */
-  width: 100%;
+  background: rgba(20, 30, 48, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(108, 99, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 .filter-panel:hover {
-  box-shadow: 0 10px 40px rgba(108, 99, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(108, 99, 255, 0.12), inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
-/* Memastikan setiap kotak punya lebar yang sama (flex: 1) */
+.filter-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(108, 99, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filter-panel-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.filter-range-badge {
+  display: flex;
+  align-items: center;
+  background: rgba(108, 99, 255, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(108, 99, 255, 0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.filter-range-badge--inactive {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.filter-panel-body {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 16px 20px;
+}
+
 .filter-item {
   flex: 1;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* Desain Kotak Input & Select */
-.custom-input {
+.filter-item--chart {
+  flex: 1.4;
+}
+
+.filter-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+}
+
+.filter-input {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  transition: all 0.25s ease;
   outline: none;
-  
-  /* TAMBAHKAN BARIS INI: Memberi tahu browser untuk pakai kalender mode gelap bawaan */
-  color-scheme: dark; 
+  color-scheme: dark;
 }
 
-/* Animasi saat kursor berada di atas input (Hover) */
-.custom-input:hover {
-  border-color: rgba(108, 99, 255, 0.5);
-  background: rgba(15, 23, 42, 0.8);
+.filter-input:hover {
+  border-color: rgba(108, 99, 255, 0.4);
+  background: rgba(15, 23, 42, 0.9);
 }
 
-/* Animasi saat input diklik (Focus) */
-.custom-input:focus {
+.filter-input:focus {
   border-color: #6C63FF;
-  box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
-  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+  background: rgba(0, 0, 0, 0.45);
 }
 
-/* PERBAIKAN: Hapus filter invert yang merusak klik, ganti dengan ini saja */
-.custom-input[type="date"]::-webkit-calendar-picker-indicator {
+.filter-input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
 }
 
-.custom-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+.filter-input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
-  transform: scale(1.1);
-}
-/* Trik untuk Select agar terlihat seragam */
-.select-wrapper {
-  position: relative;
 }
 
-/* Memposisikan ikon panah kustom */
-.select-icon {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none; /* Agar klik tembus ke select */
-  opacity: 0.7;
+.filter-divider {
+  padding: 0 8px;
+  margin-top: 22px;
+  flex-shrink: 0;
 }
 
-/* Warna latar belakang dropdown option (Hanya berlaku di beberapa browser) */
-.custom-input option {
-  background-color: #1e293b;
-  color: white;
-  padding: 10px;
+.filter-separator {
+  width: 1px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 22px 20px 0;
+  flex-shrink: 0;
+}
+
+.chart-mode-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+.chart-mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.7);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.chart-mode-btn:hover {
+  border-color: rgba(251, 140, 0, 0.4);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(251, 140, 0, 0.06);
+}
+
+.chart-mode-btn.active {
+  background: rgba(251, 140, 0, 0.15);
+  border-color: rgba(251, 140, 0, 0.5);
+  color: #FB8C00;
+  box-shadow: 0 0 12px rgba(251, 140, 0, 0.1);
 }
 
 /* Responsive */

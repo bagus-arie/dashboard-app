@@ -64,8 +64,8 @@
                 <th>Tipe</th>
                 <th>Ruangan</th>
                 <th>Status</th>
+                <th>Pemeriksaan Terakhir</th>
                 <th>Pemeliharaan Terakhir</th>
-                <th>Penggantian Terakhir</th>
                 <th>Aksi</th>
               </tr>
             </thead>
