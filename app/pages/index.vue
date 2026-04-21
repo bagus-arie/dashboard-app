@@ -296,30 +296,35 @@ const globalSummary = computed(() => {
   let lastMaintenance = '', lastMaintenanceTool = ''
   let lastReplacement = '', lastReplacementTool = ''
   
-  // Categorize logs
   const maintenanceLogs = filteredDataAlat.value
-    .filter(i => (i['Jenis Pekerjaan'] || '').toLowerCase().includes('pemeriksaan'))
+    .filter(i => (i["Jenis Pekerjaan"]?.toLowerCase() || '').includes('pemeriksaan'))
     .sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
 
   const replacementLogs = filteredDataAlat.value
-    .filter(i => (i['Jenis Pekerjaan'] || '').toLowerCase().includes('pemeliharaan') || (i['Jenis Pekerjaan'] || '').toLowerCase().includes('ganti'))
+    .filter(i => {
+      const jenis = i["Jenis Pekerjaan"]?.toLowerCase() || ''
+      return jenis.includes('pemeliharaan') || jenis.includes('ganti')
+    })
     .sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
+
+  // Gunakan optional chaining langsung pada akses array [0]
+  const firstMaintenance = maintenanceLogs[0]
+  if (firstMaintenance) {
+    lastMaintenance = firstMaintenance.Timestamp
+    lastMaintenanceTool = firstMaintenance["Jenis Alat"] || '-'
+  }
+
+  const firstReplacement = replacementLogs[0]
+  if (firstReplacement) {
+    lastReplacement = firstReplacement.Timestamp
+    lastReplacementTool = firstReplacement["Jenis Alat"] || '-'
+  }
 
   // Count daily/monthly
   filteredDataAlat.value.forEach((item: AlatData) => {
-    if (item.Timestamp.includes(todayStr)) totalDaily++
-    if (item.Timestamp.includes(currentMonthStr)) totalMonthly++
+    if (item.Timestamp?.includes(todayStr)) totalDaily++
+    if (item.Timestamp?.includes(currentMonthStr)) totalMonthly++
   })
-
-  if (maintenanceLogs.length > 0) {
-    lastMaintenance = maintenanceLogs[0].Timestamp
-    lastMaintenanceTool = maintenanceLogs[0]['Jenis Alat']
-  }
-
-  if (replacementLogs.length > 0) {
-    lastReplacement = replacementLogs[0].Timestamp
-    lastReplacementTool = replacementLogs[0]['Jenis Alat']
-  }
 
   return { 
     totalDaily, 
