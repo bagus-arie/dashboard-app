@@ -39,7 +39,8 @@
 
       <!-- Summary Stats / Parameter Terakhir -->
       <v-card-text class="pa-5">
-          <pre>{{ installation }}</pre>
+          <!-- uncomment untuk liat debug -->
+          <!-- <pre>{{ installation }}</pre> -->
         <template v-if="installation">
           <div class="section-label mb-3">
              <v-icon size="14" color="primary" class="mr-1">mdi-gauge</v-icon>

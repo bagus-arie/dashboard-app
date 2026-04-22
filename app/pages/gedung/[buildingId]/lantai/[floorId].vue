@@ -52,13 +52,14 @@
 
       <v-card class="glass-card mb-6 border-warning" variant="outlined" rounded="xl">
         <v-card-text class="pa-5">
-          <div class="section-label mb-2 text-warning">
+          <!-- uncomment untuk liat debug -->
+          <!-- <div class="section-label mb-2 text-warning">
             <v-icon size="16" color="warning" class="mr-1">mdi-bug</v-icon>
             Debug: Raw Data API
-          </div>
-          <pre class="debug-pre">{{ JSON.stringify(dataAlat, null, 2) }}</pre>
+          </div> -->
+          <!-- <pre class="debug-pre">{{ JSON.stringify(dataAlat, null, 2) }}</pre>
           <pre> {{ buildingName+nomorLantai }}</pre>
-          <pre>{{ nomorLantai }}</pre>
+          <pre>{{ nomorLantai }}</pre> -->
         </v-card-text>
       </v-card>
       <v-card class="glass-card" variant="flat" rounded="xl">

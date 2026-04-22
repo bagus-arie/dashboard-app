@@ -12,6 +12,8 @@
 
     <!-- Floor Plan -->
     <div class="floor-plan">
+      
+          <!-- uncomment untuk liat debug -->
       <!-- <pre>{{ rooms }}</pre> -->
       <div
         v-for="room in rooms"
