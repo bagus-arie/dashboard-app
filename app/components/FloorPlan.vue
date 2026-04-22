@@ -6,12 +6,13 @@
         <span class="gradient-text">{{ buildingName }} — Lantai {{ floorId }}</span>
       </h2>
       <div class="floor-plan-subtitle">
-        {{ totalInstallations }} instalasi • {{ rooms.length }} ruangan
+        {{ totalInstallations }} Alat • {{ rooms.length }} ruangan
       </div>
     </div>
 
     <!-- Floor Plan -->
     <div class="floor-plan">
+      <!-- <pre>{{ rooms }}</pre> -->
       <div
         v-for="room in rooms"
         :key="room.id"
@@ -24,7 +25,6 @@
       >
         <div class="room-label">{{ room.name }}</div>
 
-        <!-- Installations (absolute positioned) -->
         <div
           v-for="inst in room.installations"
           :key="inst.id"

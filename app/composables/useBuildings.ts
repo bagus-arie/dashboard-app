@@ -1,4 +1,5 @@
 import { useAlatStore } from '~/stores/alatStore'
+import type { AlatData } from '~/types/format'
 
 // ==========================================
 // Data Types
@@ -27,6 +28,8 @@ export interface Installation {
   posY: number  // top %
   posW: number  // width %
   posH: number  // height %
+  data: AlatData
+  dataList?: AlatData[]
 }
 
 export interface Room {
@@ -67,46 +70,46 @@ export interface BuildingSummary {
 // Mock Data Generator
 // ==========================================
 
-function generateMockRecords(installationName: string, count: number = 6): MaintenanceRecord[] {
-  const technicians = ['Ahmad Fauzi', 'Budi Santoso', 'Cahyo Wibowo', 'Dian Pratama', 'Eko Saputra']
-  const pemeliharaanDescs = [
-    'Pemeliharaan rutin harian',
-    'Pengecekan tekanan dan suhu',
-    'Pembersihan filter udara',
-    'Pengecekan oli dan pelumasan',
-    'Inspeksi visual dan uji fungsi',
-    'Pengecekan kondisi belt dan coupling',
-  ]
-  const penggantianDescs = [
-    'Penggantian filter udara',
-    'Penggantian oli kompresor',
-    'Penggantian seal dan gasket',
-    'Penggantian belt',
-    'Penggantian valve',
-  ]
+// function generateMockRecords(installationName: string, count: number = 6): MaintenanceRecord[] {
+//   const technicians = ['Ahmad Fauzi', 'Budi Santoso', 'Cahyo Wibowo', 'Dian Pratama', 'Eko Saputra']
+//   const pemeliharaanDescs = [
+//     'Pemeliharaan rutin harian',
+//     'Pengecekan tekanan dan suhu',
+//     'Pembersihan filter udara',
+//     'Pengecekan oli dan pelumasan',
+//     'Inspeksi visual dan uji fungsi',
+//     'Pengecekan kondisi belt dan coupling',
+//   ]
+//   const penggantianDescs = [
+//     'Penggantian filter udara',
+//     'Penggantian oli kompresor',
+//     'Penggantian seal dan gasket',
+//     'Penggantian belt',
+//     'Penggantian valve',
+//   ]
 
-  const records: MaintenanceRecord[] = []
-  const now = new Date(2026, 3, 11)
+//   const records: MaintenanceRecord[] = []
+//   const now = new Date(2026, 3, 11)
 
-  for (let i = 0; i < count; i++) {
-    const date = new Date(now)
-    date.setDate(date.getDate() - (i * 5 + Math.floor(Math.random() * 3)))
-    const isPenggantian = i % 4 === 0
+//   for (let i = 0; i < count; i++) {
+//     const date = new Date(now)
+//     date.setDate(date.getDate() - (i * 5 + Math.floor(Math.random() * 3)))
+//     const isPenggantian = i % 4 === 0
 
-    records.push({
-      id: i + 1,
-      date: date.toISOString().split('T')[0],
-      type: isPenggantian ? 'penggantian' : 'pemeliharaan',
-      description: isPenggantian
-        ? penggantianDescs[i % penggantianDescs.length]
-        : pemeliharaanDescs[i % pemeliharaanDescs.length],
-      technician: technicians[i % technicians.length],
-      result: i === 2 ? 'perbaikan' : isPenggantian ? 'penggantian_part' : 'baik',
-    })
-  }
+//     records.push({
+//       id: i + 1,
+//       date: date.toISOString().split('T')[0],
+//       type: isPenggantian ? 'penggantian' : 'pemeliharaan',
+//       description: isPenggantian
+//         ? penggantianDescs[i % penggantianDescs.length]
+//         : pemeliharaanDescs[i % pemeliharaanDescs.length],
+//       technician: technicians[i % technicians.length],
+//       result: i === 2 ? 'perbaikan' : isPenggantian ? 'penggantian_part' : 'baik',
+//     })
+//   }
 
-  return records
-}
+//   return records
+// }
 
 // ==========================================
 // Gedung IGD
@@ -506,7 +509,7 @@ export const useBuildings = () => {
 
     // Sort by timestamp (latest first)
     const latest = [...records].sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())[0]
-    const pekerjaan = (latest['Jenis Pekerjaan'] || '').toLowerCase()
+    const pekerjaan = (latest?.['Jenis Pekerjaan']?? '').toLowerCase()
 
     if (pekerjaan.includes('pemeriksaan')) return 'baik'
     if (pekerjaan.includes('pemeliharaan') || pekerjaan.includes('perbaikan') || pekerjaan.includes('ganti')) return 'perlu_perhatian'

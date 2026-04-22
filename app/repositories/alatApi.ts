@@ -14,20 +14,21 @@ export class AlatRepository {
   }
 
 
-  async getbyAlat(namaAlat : string): Promise<ApiResponse[]> {
-    return this.fetch<ApiResponse[]>(`?jenis_alat=${namaAlat}`, {
+  async getbyAlat(namaAlat : string): Promise<ApiResponse> {
+    return this.fetch<ApiResponse>(`?jenis_alat=${namaAlat}`, {
       method: "GET",
     });
   }
 
-   async getbyGedung(lokasi : string): Promise<ApiResponse[]> {
-    return this.fetch<ApiResponse[]>(`?lokasi=${lokasi}`, {
+   async getbyGedung(lokasi : string): Promise<ApiResponse> {
+    return this.fetch<ApiResponse>("", {
       method: "GET",
+      query:{lokasi : lokasi},
     });
   }
   
-  async getbyTanggal(tanggal : string): Promise<ApiResponse[]> {
-    return this.fetch<ApiResponse[]>(`?tanggal=${tanggal}`, {
+  async getbyTanggal(tanggal : string): Promise<ApiResponse> {
+    return this.fetch<ApiResponse>(`?tanggal=${tanggal}`, {
       method: "GET",
     });
   }

@@ -4,9 +4,12 @@ import repositoryFactory, { type ApiRepositories } from "~/repositories";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const apiFetcher: $Fetch = $fetch.create({
-    baseURL: "https://script.google.com/macros/s/AKfycbwz0o9rqLtTmqXH02Udr4LgNcNS6yS3zHR4mOuWbDYXcQOijviX6TGMRG0zJEwkC37XmQ/exec",
-    headers: {
-      Accept: "application/json",
+    baseURL: "https://script.google.com/macros/s/AKfycbwwCOGh8Bqkd_KyNhDdENElZEy4MXOM81Vrb2woBylgWCbjEh6HglR7pLacTN6cirdNJw/exec",
+    // headers: {
+    //   Accept: "application/json",
+    // },
+      headers: {
+      'Content-Type': 'text/plain;charset=utf-8',
     },
   });
 

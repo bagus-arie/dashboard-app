@@ -140,10 +140,12 @@ import { useAlatStore } from '~/stores/alatStore'
 import type { AlatData } from '~/types/format'
 
 const router = useRouter()
-const { getBuildings, formatDate } = useBuildings() 
 
+// 1. Ambil kerangka statis dari useBuildings
+const { getBuildings, formatDate } = useBuildings() 
 const buildings = computed(() => getBuildings())
 
+// 2. Ambil data dinamis dari API
 const alatStore = useAlatStore()
 const { dataAlat, isLoading } = storeToRefs(alatStore)
 
@@ -158,7 +160,6 @@ const filterStartDate = ref('')
 const filterEndDate = ref('')
 const chartMode = ref('pekerjaan') // Bisa 'pekerjaan' atau 'alat'
 
-// Daftar warna dinamis untuk mode "Statistik Alat"
 const colorPalette = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316']
 
 function parseDate(dateString: string) {
@@ -173,13 +174,11 @@ const currentMonthStr = now.toISOString().substring(0, 7)
 // ==========================================
 // MASTER DATA YANG SUDAH DI-FILTER
 // ==========================================
-// Kita buat Computed baru untuk memotong data berdasarkan tanggal Mulai & Sampai
 const filteredDataAlat = computed(() => {
   return dataAlat.value.filter((item: AlatData) => {
     if (!item.Timestamp) return false;
     const itemDateStr = item.Timestamp.substring(0, 10);
     
-    // Cek apakah masuk dalam range tanggal (jika filter diisi)
     if (filterStartDate.value && itemDateStr < filterStartDate.value) return false;
     if (filterEndDate.value && itemDateStr > filterEndDate.value) return false;
     
@@ -190,8 +189,6 @@ const filteredDataAlat = computed(() => {
 // ==========================================
 // LOGIKA GRAFIK (STATISTIC CARD)
 // ==========================================
-
-// 1. Membuat Kategori & Warna Secara Dinamis
 const chartCategories = computed(() => {
   if (chartMode.value === 'pekerjaan') {
     return {
@@ -199,7 +196,6 @@ const chartCategories = computed(() => {
       pemeliharaan: { name: 'Pemeliharaan / Ganti', color: '#22c55e' }
     }
   } else {
-    // Mode Alat: Ambil nama-nama alat unik yang ada di data
     const uniqueTools = new Set<string>()
     filteredDataAlat.value.forEach((i: AlatData) => {
       uniqueTools.add(i['Jenis Alat'] ? i['Jenis Alat'].toLowerCase() : 'tidak diketahui')
@@ -218,13 +214,12 @@ const chartCategories = computed(() => {
   }
 })
 
-// 2. Menghitung Angka untuk Sumbu X dan Y
 const chartData = computed(() => {
   const grouped: Record<string, Record<string, number>> = {}
 
   filteredDataAlat.value.forEach((item: AlatData) => {
     const date = item.Timestamp.substring(0, 10)
-    if (!grouped[date]) grouped[date] = {} // Inisialisasi wadah tanggal
+    if (!grouped[date]) grouped[date] = {} 
     
     const statsForDate = grouped[date]
 
@@ -237,60 +232,96 @@ const chartData = computed(() => {
       else if (jenis.includes('pemeliharaan') || jenis.includes('ganti')) statsForDate.pemeliharaan++
     } 
     else {
-      // Mode Alat
       const alat = (item['Jenis Alat'] || 'tidak diketahui').toLowerCase()
       if (statsForDate[alat] === undefined) statsForDate[alat] = 0
       statsForDate[alat]++
     }
   })
 
-  // Format ke bentuk Array Object untuk dibaca oleh NuxtCharts
   return Object.keys(grouped).sort().map(date => {
     return { date, ...grouped[date] }
   })
 })
 
 // ==========================================
-// DATA GEDUNG DAN GLOBAL MENGGUNAKAN DATA FILTERED
+// DATA GEDUNG (API SUNTIK KE useBuildings)
 // ==========================================
 const buildingSummaries = computed(() => {
   const summaries: Record<string, any> = {}
 
+  // 1. Siapkan wadah berdasarkan data useBuildings
   buildings.value.forEach(b => {
-    summaries[b.id] = { totalDaily: 0, totalMonthly: 0, totalInstallations: 0, activeFloors: 1, lastMaintenance: '', lastReplacement: '' }
+    summaries[b.id] = { 
+      totalDaily: 0, 
+      totalMonthly: 0, 
+      totalInstallations: 0, 
+      activeFloors: b.floors ? b.floors.length : 1, // Ambil jumlah lantai asli
+      lastMaintenance: '', 
+      lastReplacement: '',
+      _rawPemeriksaan: [] as any[], // Wadah sementara untuk cari tanggal
+      _rawPemeliharaan: [] as any[]
+    }
   })
 
-  // Perhatikan: Menggunakan filteredDataAlat, bukan dataAlat !
+  // 2. Distribusikan log API ke masing-masing gedung
   filteredDataAlat.value.forEach((item: AlatData) => {
-    const itemDate = parseDate(item.Timestamp)
+    if (!item.Timestamp) return;
+
     const isToday = item.Timestamp.includes(todayStr)
     const isThisMonth = item.Timestamp.includes(currentMonthStr)
     const jenisPekerjaan = (item['Jenis Pekerjaan'] || '').toLowerCase()
     const lokasiAlat = (item['Lokasi Alat'] || '').toLowerCase()
 
-    const targetBuilding = buildings.value.find(b => lokasiAlat.includes(b.name.toLowerCase()) || lokasiAlat.includes(b.id.toLowerCase()))
+    // Cari tahu log ini milik gedung yang mana
+    const targetBuilding = buildings.value.find(b => 
+      lokasiAlat.includes(b.name.toLowerCase()) || lokasiAlat.includes(b.id.toLowerCase())
+    )
 
     if (targetBuilding) {
       const stats = summaries[targetBuilding.id]
       stats.totalInstallations++ 
+      
       if (isToday) stats.totalDaily++
       if (isThisMonth) stats.totalMonthly++
 
+      // Pisahkan berdasarkan jenis pekerjaan untuk disortir nanti
       if (jenisPekerjaan.includes('pemeriksaan')) {
-        if (!stats.lastMaintenance || itemDate > new Date(stats.lastMaintenance)) stats.lastMaintenance = item.Timestamp
-      }
-      if (jenisPekerjaan.includes('pemeliharaan') || jenisPekerjaan.includes('ganti')) {
-        if (!stats.lastReplacement || itemDate > new Date(stats.lastReplacement)) stats.lastReplacement = item.Timestamp
+        stats._rawPemeriksaan.push(item)
+      } else if (jenisPekerjaan.includes('pemeliharaan') || jenisPekerjaan.includes('ganti')) {
+        stats._rawPemeliharaan.push(item)
       }
     }
   })
+
+  // 3. Cari tanggal paling baru (terbaru) untuk masing-masing gedung
+  Object.keys(summaries).forEach(id => {
+    const stats = summaries[id]
+    
+    // Urutkan dari yang terbaru ke terlama
+    const sortedPemeriksaan = stats._rawPemeriksaan.sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
+    const sortedPemeliharaan = stats._rawPemeliharaan.sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
+
+    // Ambil index ke-0 (paling baru)
+    stats.lastMaintenance = sortedPemeriksaan[0]?.Timestamp || ''
+    stats.lastReplacement = sortedPemeliharaan[0]?.Timestamp || ''
+
+    // Bersihkan data sementara agar memori tidak berat
+    delete stats._rawPemeriksaan
+    delete stats._rawPemeliharaan
+  })
+
   return summaries
 })
 
 function getSummary(buildingId: string) {
-  return buildingSummaries.value[buildingId] || { totalDaily: 0, totalMonthly: 0, totalInstallations: 0, activeFloors: 0, lastMaintenance: '', lastReplacement: '' }
+  return buildingSummaries.value[buildingId] || { 
+    totalDaily: 0, totalMonthly: 0, totalInstallations: 0, activeFloors: 0, lastMaintenance: '', lastReplacement: '' 
+  }
 }
 
+// ==========================================
+// GLOBAL SUMMARY UNTUK KARTU PALING ATAS
+// ==========================================
 const globalSummary = computed(() => {
   let totalDaily = 0, totalMonthly = 0
   let lastMaintenance = '', lastMaintenanceTool = ''
@@ -307,7 +338,6 @@ const globalSummary = computed(() => {
     })
     .sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())
 
-  // Gunakan optional chaining langsung pada akses array [0]
   const firstMaintenance = maintenanceLogs[0]
   if (firstMaintenance) {
     lastMaintenance = firstMaintenance.Timestamp
@@ -320,7 +350,6 @@ const globalSummary = computed(() => {
     lastReplacementTool = firstReplacement["Jenis Alat"] || '-'
   }
 
-  // Count daily/monthly
   filteredDataAlat.value.forEach((item: AlatData) => {
     if (item.Timestamp?.includes(todayStr)) totalDaily++
     if (item.Timestamp?.includes(currentMonthStr)) totalMonthly++
@@ -342,7 +371,6 @@ function navigateToFloor(buildingId: string, floorId: number) {
   router.push(`/gedung/${buildingId}/lantai/${floorId}`)
 }
 </script>
-
 <style scoped>
 .page-header {
   text-align: left;

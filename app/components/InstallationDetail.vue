@@ -39,34 +39,35 @@
 
       <!-- Summary Stats / Parameter Terakhir -->
       <v-card-text class="pa-5">
-        <template v-if="records.length > 0">
+          <pre>{{ installation }}</pre>
+        <template v-if="installation">
           <div class="section-label mb-3">
              <v-icon size="14" color="primary" class="mr-1">mdi-gauge</v-icon>
-             Parameter Terakhir ({{ formatDate(records[0].date) }})
+             Parameter Terakhir ( isi data di arus r)
           </div>
           <v-row dense class="mb-6">
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ records[0].raw['Hour Meter'] || '-' }}</div>
+                <div class="mini-stat-value">{{ installation.data?.['Hour Meter'] || '-' }}</div>
                 <div class="mini-stat-label">Hour Meter</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ records[0].raw['Pressure On'] || '-' }} / {{ records[0].raw['Pressure Off'] || '-' }}</div>
+                <div class="mini-stat-value">{{ installation.data?.['Pressure On'] || '-' }} / {{ installation.data?.['Pressure Off'] || '-' }}</div>
                 <div class="mini-stat-label">Pressure (On/Off)</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ records[0].raw['Arus R'] || '-' }} / {{ records[0].raw['Arus S'] || '-' }} / {{ records[0].raw['Arus T'] || '-' }}</div>
+                <div class="mini-stat-value">{{ installation.data?.['Arus R'] || '-' }} / {{ installation.data?.['Arus S'] || '-' }} / {{ installation.data?.['Arus T'] || '-' }}</div>
                 <div class="mini-stat-label">Arus (R/S/T)</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
                 <div class="mini-stat-value">
-                  {{ records[0].raw['Tegangan L-L (Avg)'] || '-' }} / {{ records[0].raw['Tegangan L-N (Avg)'] || '-' }}
+                  {{ installation.data?.['Tegangan L-L (Avg)'] || '-' }} / {{ installation.data?.['Tegangan L-N (Avg)'] || '-' }}
                 </div>
                 <div class="mini-stat-label">Tegangan (L-L / L-N)</div>
               </div>
@@ -75,12 +76,12 @@
         </template>
 
         <!-- Table Header -->
-        <div class="d-flex align-center justify-space-between mb-3">
+        <!-- <div class="d-flex align-center justify-space-between mb-3">
           <h4 class="table-title">Riwayat Pemeliharaan</h4>
           <v-chip size="small" color="primary" variant="tonal">
             {{ records.length }} record
           </v-chip>
-        </div>
+        </div> -->
 
         <!-- Data Table -->
         <v-table density="comfortable" class="records-table" hover>
@@ -93,23 +94,23 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="record in records" :key="record.id">
-              <td class="text-caption">{{ formatDate(record.date) }}</td>
+            <tr v-for="item in  installation.dataList">
+              <td class="text-caption">{{ formatDate(item.Timestamp??"") }}</td>
               <td>
                 <v-chip
                   size="x-small"
-                  :color="record.type === 'penggantian' ? 'warning' : 'primary'"
+                  :color="item['Jenis Pekerjaan'] === 'penggantian' ? 'warning' : 'primary'"
                   variant="tonal"
                 >
-                  {{ record.type === 'penggantian' ? 'Ganti Part' : 'Periksa' }}
+                  {{ item['Jenis Pekerjaan']  === 'penggantian' ? 'Ganti Part' : 'Periksa' }}
                 </v-chip>
               </td>
-              <td class="text-caption description-cell">{{ record.description }}</td>
+              <td class="text-caption description-cell">{{ item['Jenis Pekerjaan (Jelaskan part yang diganti / Pekerjaan yang dilakukan)'] ?? "-"}}</td>
               <td>
                 <div class="d-flex ga-1">
                   <v-btn 
-                    v-if="record.raw['Foto Selfie + Time Stamp']"
-                    :href="record.raw['Foto Selfie + Time Stamp']" 
+                    v-if="item['Foto Selfie + Time Stamp']"
+                    :href="item['Foto Selfie + Time Stamp']" 
                     target="_blank" 
                     icon 
                     size="x-small" 
@@ -120,8 +121,20 @@
                     <v-icon size="16">mdi-camera-account</v-icon>
                   </v-btn>
                   <v-btn 
-                    v-if="record.raw['Foto pekerjaan']"
-                    :href="record.raw['Foto pekerjaan']" 
+                    v-else
+                    :href="item['Foto Selfie + Time Stamp']" 
+                    target="_blank" 
+                    icon 
+                    size="x-small" 
+                    variant="text" 
+                    color="primary"
+                    title="Foto Selfie"
+                  >
+                    <v-icon size="16">mdi-camera-account</v-icon>
+                  </v-btn>
+                  <v-btn 
+                    v-if="item['Foto pekerjaan']"
+                    :href="item['Foto pekerjaan']" 
                     target="_blank" 
                     icon 
                     size="x-small" 
@@ -131,10 +144,22 @@
                   >
                     <v-icon size="16">mdi-camera</v-icon>
                   </v-btn>
+                   <v-btn 
+                    v-else
+                    :href="item['Foto Selfie + Time Stamp']" 
+                    target="_blank" 
+                    icon 
+                    size="x-small" 
+                    variant="text" 
+                    color="primary"
+                    title="Foto Selfie"
+                  >
+                    <v-icon size="16">mdi-camera-account</v-icon>
+                  </v-btn>
                 </div>
               </td>
             </tr>
-            <tr v-if="records.length === 0">
+            <tr v-if="installation.data === null">
               <td colspan="4" class="text-center pa-4 text-grey">Belum ada riwayat untuk alat ini di lokasi ini.</td>
             </tr>
           </tbody>
@@ -153,6 +178,7 @@
 
 <script setup lang="ts">
 import type { Installation } from '~/composables/useBuildings'
+import type { AlatData } from '~/types/format';
 
 const props = defineProps<{
   installation: Installation
@@ -170,7 +196,7 @@ const dialogOpen = computed({
   set: (val) => emit('update:modelValue', val),
 })
 
-const records = computed(() => getInstallationRecords(props.installation.id))
+// const records = computed(() => getInstallationRecords(props.installation.id))
 
 function getResultColor(result: string): string {
   const map: Record<string, string> = {
