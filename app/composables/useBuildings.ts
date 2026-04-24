@@ -140,19 +140,19 @@ const gedungIGD: Building = {
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-15',
               dailyCount: 1, monthlyCount: 24,
               posX: 8, posY: 12, posW: 68, posH: 18,
+              dataList:[],
+              data:{} as AlatData
+
             },
             {
               id: 'igd-7-r1-kb2', name: 'Kompresor Bebicon 2', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 22,
               posX: 8, posY: 40, posW: 68, posH: 22,
+                dataList:[],
+              data:{} as AlatData
             },
-            {
-              id: 'igd-7-r1-d1', name: 'Dryer', type: 'dryer',
-              status: 'perlu_perhatian', lastMaintenance: '2026-04-09', lastReplacement: '2026-02-20',
-              dailyCount: 1, monthlyCount: 20,
-              posX: 8, posY: 72, posW: 82, posH: 18,
-            },
+            
           ],
         },
         // R2 — Kuning
@@ -164,46 +164,44 @@ const gedungIGD: Building = {
           flex: 4,
           installations: [
             {
-              id: 'igd-7-r2-db', name: 'Dryer Bebicon', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-01',
-              dailyCount: 1, monthlyCount: 28,
-              posX: 18, posY: 8, posW: 52, posH: 12,
-            },
-            {
               id: 'igd-7-r2-ks1', name: 'Kompresor Swan 1', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 25,
               posX: 5, posY: 26, posW: 40, posH: 14,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r2-kb1', name: 'Kompresor Bebicon 1', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-20',
               dailyCount: 1, monthlyCount: 26,
               posX: 52, posY: 26, posW: 42, posH: 14,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r2-ks2', name: 'Kompresor Swan 2', type: 'kompresor',
               status: 'perlu_perhatian', lastMaintenance: '2026-04-09', lastReplacement: null,
               dailyCount: 1, monthlyCount: 23,
               posX: 5, posY: 46, posW: 40, posH: 14,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r2-kb2', name: 'Kompresor Bebicon 2', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 24,
               posX: 52, posY: 46, posW: 42, posH: 14,
-            },
-            {
-              id: 'igd-7-r2-ds', name: 'Dryer Swan', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-02-10',
-              dailyCount: 1, monthlyCount: 27,
-              posX: 5, posY: 66, posW: 40, posH: 14,
+                dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r2-kb3', name: 'Kompresor Bebicon 3', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 22,
               posX: 52, posY: 66, posW: 42, posH: 14,
+              dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -216,34 +214,36 @@ const gedungIGD: Building = {
           flex: 3,
           installations: [
             {
-              id: 'igd-7-r3-d1', name: 'Dryer', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: null,
-              dailyCount: 1, monthlyCount: 26,
-              posX: 5, posY: 12, posW: 24, posH: 22,
-            },
-            {
               id: 'igd-7-r3-k1', name: 'Komp 1', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-05',
               dailyCount: 1, monthlyCount: 24,
               posX: 38, posY: 12, posW: 20, posH: 26,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r3-k2', name: 'Komp 2', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 23,
               posX: 66, posY: 12, posW: 20, posH: 26,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r3-v1', name: 'Vakum 1', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-01-15',
               dailyCount: 1, monthlyCount: 25,
               posX: 62, posY: 50, posW: 30, posH: 18,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-7-r3-v2', name: 'Vakum 2', type: 'vakum',
               status: 'perlu_perhatian', lastMaintenance: '2026-04-09', lastReplacement: null,
               dailyCount: 1, monthlyCount: 21,
               posX: 62, posY: 74, posW: 30, posH: 18,
+              dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -271,24 +271,32 @@ const gedungIGD: Building = {
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-10',
               dailyCount: 1, monthlyCount: 28,
               posX: 5, posY: 14, posW: 32, posH: 16,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-2-r1-vb2', name: 'Vakum Busch 2', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 26,
               posX: 5, posY: 38, posW: 32, posH: 16,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-2-r1-vk1', name: 'Vakum Becker 1', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-02-28',
               dailyCount: 1, monthlyCount: 25,
               posX: 55, posY: 56, posW: 36, posH: 16,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-2-r1-vk2', name: 'Vakum Becker 2', type: 'vakum',
               status: 'perlu_perhatian', lastMaintenance: '2026-04-08', lastReplacement: null,
               dailyCount: 1, monthlyCount: 22,
               posX: 55, posY: 78, posW: 36, posH: 16,
+              dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -311,18 +319,16 @@ const gedungIGD: Building = {
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-22',
               dailyCount: 1, monthlyCount: 27,
               posX: 5, posY: 12, posW: 38, posH: 22,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'igd-1-r1-kb2', name: 'Komp Bebicon 2', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 24,
               posX: 5, posY: 48, posW: 38, posH: 22,
-            },
-            {
-              id: 'igd-1-r1-d1', name: 'Dryer', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-01-30',
-              dailyCount: 1, monthlyCount: 26,
-              posX: 58, posY: 20, posW: 28, posH: 36,
+              dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -355,22 +361,20 @@ const gedungNICU: Building = {
           flex: 1,
           installations: [
             {
-              id: 'nicu-4-r1-d1', name: 'Dryer', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-08',
-              dailyCount: 1, monthlyCount: 26,
-              posX: 72, posY: 8, posW: 18, posH: 14,
-            },
-            {
               id: 'nicu-4-r1-ac1', name: 'kompressor atlas alfa', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-02-15',
               dailyCount: 1, monthlyCount: 28,
               posX: 8, posY: 30, posW: 65, posH: 22,
+              dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'nicu-4-r1-ac2', name: 'Komp Atlas Copco 2', type: 'kompresor',
               status: 'perlu_perhatian', lastMaintenance: '2026-04-09', lastReplacement: null,
               dailyCount: 1, monthlyCount: 25,
               posX: 8, posY: 60, posW: 70, posH: 22,
+               dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -411,12 +415,16 @@ const ruangPICU: Building = {
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-03-18',
               dailyCount: 1, monthlyCount: 24,
               posX: 28, posY: 52, posW: 18, posH: 34,
+               dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'picu-1-r1-v1', name: 'Vakum 1', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: null,
               dailyCount: 1, monthlyCount: 26,
               posX: 68, posY: 52, posW: 18, posH: 34,
+               dataList:[],
+              data:{} as AlatData
             },
           ],
         },
@@ -455,34 +463,36 @@ const grandPavilliun: Building = {
           flex: 1,
           installations: [
             {
-              id: 'gp-b-r1-d1', name: 'Dryer', type: 'dryer',
-              status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-12',
-              dailyCount: 1, monthlyCount: 26,
-              posX: 38, posY: 5, posW: 40, posH: 10,
-            },
-            {
               id: 'gp-b-r1-kb1', name: 'Komp Bebicon 1', type: 'kompresor',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: '2026-02-20',
               dailyCount: 1, monthlyCount: 28,
               posX: 20, posY: 24, posW: 52, posH: 12,
+               dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'gp-b-r1-kb2', name: 'Komp Bebicon 2', type: 'kompresor',
               status: 'perlu_perhatian', lastMaintenance: '2026-04-09', lastReplacement: null,
               dailyCount: 1, monthlyCount: 25,
               posX: 25, posY: 42, posW: 52, posH: 12,
+               dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'gp-b-r1-v1', name: 'Vakum 1', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-11', lastReplacement: '2026-03-05',
               dailyCount: 1, monthlyCount: 24,
               posX: 20, posY: 60, posW: 48, posH: 12,
+               dataList:[],
+              data:{} as AlatData
             },
             {
               id: 'gp-b-r1-v2', name: 'Vakum 2', type: 'vakum',
               status: 'baik', lastMaintenance: '2026-04-10', lastReplacement: null,
               dailyCount: 1, monthlyCount: 23,
               posX: 25, posY: 78, posW: 48, posH: 12,
+               dataList:[],
+              data:{} as AlatData
             },
           ],
         },

@@ -53,13 +53,13 @@
       <v-card class="glass-card mb-6 border-warning" variant="outlined" rounded="xl">
         <v-card-text class="pa-5">
           <!-- uncomment untuk liat debug -->
-          <!-- <div class="section-label mb-2 text-warning">
+          <div class="section-label mb-2 text-warning">
             <v-icon size="16" color="warning" class="mr-1">mdi-bug</v-icon>
             Debug: Raw Data API
-          </div> -->
-          <!-- <pre class="debug-pre">{{ JSON.stringify(dataAlat, null, 2) }}</pre>
+          </div>
+          <pre class="debug-pre">{{ JSON.stringify(dataAlat, null, 2) }}</pre>
           <pre> {{ buildingName+nomorLantai }}</pre>
-          <pre>{{ nomorLantai }}</pre> -->
+          <pre>{{ nomorLantai }}</pre>
         </v-card-text>
       </v-card>
       <v-card class="glass-card" variant="flat" rounded="xl">
@@ -150,6 +150,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useDetailAlatStore } from '~/stores/detailAlatStore'
+import type { AlatData } from '~/types/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -321,24 +322,67 @@ function cleanToolName(rawName: string): string {
 const dynamicRooms = computed(() => {
   if (!floor.value) return [];
 
+  // --- KAMUS PENERJEMAH ---
+  // Fungsi ini menyamakan bahasa UI dengan bahasa Teknisi di API
+  const normalizeText = (text: string) => {
+    if (!text) return '';
+    return text.toLowerCase()
+      .replace(/1/g, 'alfa')        // Ubah angka 1 jadi alfa
+      .replace(/2/g, 'beta')        // Ubah angka 2 jadi beta
+      .replace(/3/g, 'charlie')     // Ubah angka 3 jadi charlie
+      .replace(/bebicon/g, 'hitachi') // Bebicon adalah merk Hitachi
+      .replace(/atlas/g, 'hitachi')   // Menyesuaikan alat R1
+      .replace(/kompressor/g, 'kompresor') 
+      .replace(/komp /g, 'kompresor ') // Ubah "Komp 1" jadi "kompresor alfa"
+      .trim();
+  };
+
   return floor.value.rooms.map((room) => {
     const updatedInstallations = room.installations.map((inst) => {
       
       const historyLog = dataAlat.value.filter(log => {
-        const lokasiApi = log["Lokasi Alat"] || '';
-        
-        const jenisAlatBersih = cleanToolName(log["Jenis Alat"],).toLowerCase();
-        
-        const matchName = jenisAlatBersih.includes(inst.name.toLowerCase());
-        const matchType = jenisAlatBersih.includes(inst.type.toLowerCase());
-        
-        return matchName || matchType;
+        const lokasiApi = (log["Lokasi Alat"] || '').toLowerCase();
+        const namaApiMentah = log["Jenis Alat"] || '';
+        const roomNameLower = room.name.toLowerCase(); // misal "r1", "r2", "r3"
+
+        // 1. FILTER LOKASI (Pastikan alat ada di ruangan yang tepat)
+        const matchLokasi = lokasiApi.includes(roomNameLower) || namaApiMentah.toLowerCase().includes(roomNameLower);
+        if (!matchLokasi) return false;
+
+        // 2. TERJEMAHKAN KEDUA NAMA AGAR BAHASANYA SAMA
+        const uiNameNorm = normalizeText(inst.name);
+        const apiNameNorm = normalizeText(namaApiMentah);
+
+        // 3. FILTER TIPE (Pisahkan kompresor dengan vakum)
+        // Pastikan tipe dasarnya sama dulu agar "Komp 1" tidak menarik data "Vakum 1"
+        const typeMatch = apiNameNorm.includes(inst.type.toLowerCase());
+        if (!typeMatch) return false;
+
+        // 4. FILTER MERK & NOMOR (Tokenization)
+        // Hapus kata dasar agar kita fokus mencocokkan merk dan seri (contoh: "hitachi", "beta")
+        const kataKunci = uiNameNorm
+          .replace(/kompresor|vakum|dryer/g, '')
+          .trim()
+          .split(/\s+/)
+          .filter(k => k.length > 0);
+
+        // Jika tidak ada kata kunci unik (misal namanya cuma "Kompresor"), loloskan
+        if (kataKunci.length === 0) return true;
+
+        // KUNCI UTAMA: Pastikan SEMUA kata kunci dari UI ada di dalam string API
+        // Contoh UI: "Bebicon 2" -> jadi ["hitachi", "beta"]
+        // Apakah "hitachi" & "beta" ada di "igd7r2 kompresor hitachi beta"? -> YES!
+        return kataKunci.every(kata => apiNameNorm.includes(kata));
       });
 
-      const latestLog = historyLog.sort((a, b) => 
+      // URUTKAN DARI YANG TERBARU
+      const sortedHistoryLog = historyLog.sort((a, b) => 
         new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime()
-      )[0];
+      );
 
+      const latestLog = sortedHistoryLog[0];
+
+      // TENTUKAN STATUS
       let currentStatus = inst.status; 
       if (latestLog) {
         const pekerjaan = (latestLog["Jenis Pekerjaan"] || '').toLowerCase();
@@ -354,6 +398,8 @@ const dynamicRooms = computed(() => {
       return {
         ...inst,
         status: currentStatus,
+        dataList: sortedHistoryLog, 
+        data: (latestLog || {}) as any, 
         _latestLog: latestLog || null 
       };
     });

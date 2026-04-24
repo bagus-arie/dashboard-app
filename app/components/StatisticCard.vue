@@ -1,17 +1,18 @@
 <script lang="ts" setup>
 import { useColorMode } from '#imports'
-// Hapus import BulletLegendItemInterface jika membuat error
+
+// HAPUS SEMUA IMPORT DARI @unovis/ts (Sudah tidak dibutuhkan)
 
 defineOptions({
-  tags: ['areacharts', 'multiplelines']
+  tags: ['barcharts', 'multiplebars']
 })
 
-// 1. TAMBAHKAN PROPS CATEGORIES
+// Menerima data dan kategori dari Halaman Utama
 const props = withDefaults(
   defineProps<{
     showTitle?: boolean
     data: any[]
-    categories: any // Menerima konfigurasi warna & nama dari halaman utama
+    categories: any
   }>(),
   {
     showTitle: false,
@@ -27,6 +28,7 @@ const { height } = useResponsiveHeight({
 
 const colorMode = useColorMode()
 
+// Mengatur label di sumbu X (Bawah) agar menampilkan tanggal
 const xFormatter = (tick: number): string => {
   return `${props.data[tick]?.date || ''}`
 }
@@ -38,16 +40,13 @@ const xFormatter = (tick: number): string => {
       <h3 class="text-lg font-semibold text-white">Grafik Monitoring</h3>
     </div>
     
-    <AreaChart
+   <BarChart
       :key="colorMode.value"
       :data="props.data"
       :height="height"
       :categories="props.categories"
-      :y-grid-line="true"
       :x-formatter="xFormatter"
-      :curve-type="CurveType.MonotoneX"
-      :legend-position="LegendPosition.TopRight"
-      :hide-legend="false"
+      :y-axis="Object.keys(props.categories)" 
     />
-  </div>
+    </div>
 </template>
