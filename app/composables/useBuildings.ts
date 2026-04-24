@@ -519,11 +519,11 @@ export const useBuildings = () => {
 
     // Sort by timestamp (latest first)
     const latest = [...records].sort((a, b) => new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime())[0]
-    const pekerjaan = (latest?.['Jenis Pekerjaan']?? '').toLowerCase()
+    const pekerjaan = (latest?.['Jenis Pekerjaan'] ?? '').toLowerCase()
 
     if (pekerjaan.includes('pemeriksaan')) return 'baik'
     if (pekerjaan.includes('pemeliharaan') || pekerjaan.includes('perbaikan') || pekerjaan.includes('ganti')) return 'perlu_perhatian'
-    
+
     return defaultStatus
   }
 
