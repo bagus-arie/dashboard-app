@@ -63,7 +63,7 @@
         </v-card-text>
       </v-card>
 
-      <v-card
+      <!-- <v-card
         class="glass-card mb-6 border-warning"
         variant="outlined"
         rounded="xl"
@@ -78,7 +78,7 @@
           <pre> {{ buildingName + nomorLantai }}</pre>
           <pre>{{ nomorLantai }}</pre>
         </v-card-text>
-      </v-card>
+      </v-card> -->
       <v-card class="glass-card" variant="flat" rounded="xl">
         <v-card-text class="pa-5">
           <div class="section-label mb-4">

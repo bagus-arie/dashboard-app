@@ -15,7 +15,7 @@
     <!-- Floor Plan -->
     <div class="floor-plan">
       <!-- uncomment untuk liat debug -->
-      <pre>{{ rooms }}</pre>
+      <!-- <pre>{{ rooms }}</pre> -->
       <div
         v-for="room in rooms"
         :key="room.id"
