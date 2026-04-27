@@ -3,7 +3,9 @@
     <!-- Floor Header -->
     <div class="floor-plan-header mb-4">
       <h2 class="floor-plan-title">
-        <span class="gradient-text">{{ buildingName }} — Lantai {{ floorId }}</span>
+        <span class="gradient-text"
+          >{{ buildingName }} — Lantai {{ floorId }}</span
+        >
       </h2>
       <div class="floor-plan-subtitle">
         {{ totalInstallations }} Alat • {{ rooms.length }} ruangan
@@ -12,9 +14,8 @@
 
     <!-- Floor Plan -->
     <div class="floor-plan">
-      
-          <!-- uncomment untuk liat debug -->
-      <!-- <pre>{{ rooms }}</pre> -->
+      <!-- uncomment untuk liat debug -->
+      <pre>{{ rooms }}</pre>
       <div
         v-for="room in rooms"
         :key="room.id"
@@ -38,10 +39,13 @@
             width: inst.posW + '%',
             height: inst.posH + '%',
           }"
-          @click="$emit('select-installation', inst)"
+          @click="$emit('select-installation', inst, inst.name)"
         >
           <div class="installation-status">
-            <span class="status-dot" :class="'status-dot--' + inst.status"></span>
+            <span
+              class="status-dot"
+              :class="'status-dot--' + inst.status"
+            ></span>
           </div>
           <v-icon
             :size="getIconSize(inst)"
@@ -50,7 +54,10 @@
           >
             {{ getTypeIcon(inst.type) }}
           </v-icon>
-          <span class="installation-name" :style="{ fontSize: getNameSize(inst) }">
+          <span
+            class="installation-name"
+            :style="{ fontSize: getNameSize(inst) }"
+          >
             {{ inst.name }}
           </span>
           <span
@@ -67,45 +74,45 @@
 </template>
 
 <script setup lang="ts">
-import type { Room, Installation } from '~/composables/useBuildings'
+import type { Room, Installation } from "~/composables/useBuildings";
 
 const props = defineProps<{
-  rooms: Room[]
-  buildingName: string
-  floorId: number
-}>()
+  rooms: Room[];
+  buildingName: string;
+  floorId: number;
+}>();
 
 defineEmits<{
-  (e: 'select-installation', installation: Installation): void
-}>()
+  (e: "select-installation", installation: Installation, nama: string): void;
+}>();
 
-const { getTypeColor, getTypeIcon } = useBuildings()
+const { getTypeColor, getTypeIcon } = useBuildings();
 
 const totalInstallations = computed(() =>
-  props.rooms.reduce((sum, r) => sum + r.installations.length, 0)
-)
+  props.rooms.reduce((sum, r) => sum + r.installations.length, 0),
+);
 
 // Adaptive sizing based on installation card area
 function getArea(inst: Installation): number {
-  return inst.posW * inst.posH
+  return inst.posW * inst.posH;
 }
 
 function getIconSize(inst: Installation): number {
-  const area = getArea(inst)
-  if (area < 250) return 14
-  if (area < 500) return 16
-  return 20
+  const area = getArea(inst);
+  if (area < 250) return 14;
+  if (area < 500) return 16;
+  return 20;
 }
 
 function getNameSize(inst: Installation): string {
-  const area = getArea(inst)
-  if (area < 200) return '0.55rem'
-  if (area < 400) return '0.62rem'
-  return '0.72rem'
+  const area = getArea(inst);
+  if (area < 200) return "0.55rem";
+  if (area < 400) return "0.62rem";
+  return "0.72rem";
 }
 
 function isLargeEnough(inst: Installation): boolean {
-  return getArea(inst) > 500
+  return getArea(inst) > 500;
 }
 </script>
 
@@ -185,11 +192,11 @@ function isLargeEnough(inst: Installation): boolean {
 }
 
 .installation-card--perlu_perhatian {
-  border-left: 3px solid #FB8C00;
+  border-left: 3px solid #fb8c00;
 }
 
 .installation-card--rusak {
-  border-left: 3px solid #FF5252;
+  border-left: 3px solid #ff5252;
 }
 
 .installation-status {

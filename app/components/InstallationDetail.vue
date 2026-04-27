@@ -20,10 +20,17 @@
                   class="status-dot"
                   :class="'status-dot--' + installation.status"
                 ></span>
-                <span class="dialog-status" :style="{ color: getStatusColor(installation.status) }">
+                <span
+                  class="dialog-status"
+                  :style="{ color: getStatusColor(installation.status) }"
+                >
                   {{ getStatusLabel(installation.status) }}
                 </span>
-                <v-chip size="x-small" variant="outlined" :color="getTypeColor(installation.type)">
+                <v-chip
+                  size="x-small"
+                  variant="outlined"
+                  :color="getTypeColor(installation.type)"
+                >
                   {{ installation.type }}
                 </v-chip>
               </div>
@@ -39,36 +46,46 @@
 
       <!-- Summary Stats / Parameter Terakhir -->
       <v-card-text class="pa-5">
-          <!-- uncomment untuk liat debug -->
-          <!-- <pre>{{ installation }}</pre> -->
+        <!-- uncomment untuk liat debug -->
+        <!-- <pre>{{ installation }}</pre> -->
         <template v-if="installation">
           <div class="section-label mb-3">
-             <v-icon size="14" color="primary" class="mr-1">mdi-gauge</v-icon>
-             Parameter Terakhir ( isi data di arus r)
+            <v-icon size="14" color="primary" class="mr-1">mdi-gauge</v-icon>
+            Parameter Terakhir ( isi data di arus r)
           </div>
           <v-row dense class="mb-6">
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ installation.data?.['Hour Meter'] || '-' }}</div>
+                <div class="mini-stat-value">
+                  {{ installation.data?.["Hour Meter"] || "-" }}
+                </div>
                 <div class="mini-stat-label">Hour Meter</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ installation.data?.['Pressure On'] || '-' }} / {{ installation.data?.['Pressure Off'] || '-' }}</div>
+                <div class="mini-stat-value">
+                  {{ installation.data?.["Pressure On"] || "-" }} /
+                  {{ installation.data?.["Pressure Off"] || "-" }}
+                </div>
                 <div class="mini-stat-label">Pressure (On/Off)</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
-                <div class="mini-stat-value">{{ installation.data?.['Arus R'] || '-' }} / {{ installation.data?.['Arus S'] || '-' }} / {{ installation.data?.['Arus T'] || '-' }}</div>
+                <div class="mini-stat-value">
+                  {{ installation.data?.["Arus R"] || "-" }} /
+                  {{ installation.data?.["Arus S"] || "-" }} /
+                  {{ installation.data?.["Arus T"] || "-" }}
+                </div>
                 <div class="mini-stat-label">Arus (R/S/T)</div>
               </div>
             </v-col>
             <v-col cols="6" sm="3">
               <div class="mini-stat">
                 <div class="mini-stat-value">
-                  {{ installation.data?.['Tegangan L-L (Avg)'] || '-' }} / {{ installation.data?.['Tegangan L-N (Avg)'] || '-' }}
+                  {{ installation.data?.["Tegangan L-L (Avg)"] || "-" }} /
+                  {{ installation.data?.["Tegangan L-N (Avg)"] || "-" }}
                 </div>
                 <div class="mini-stat-label">Tegangan (L-L / L-N)</div>
               </div>
@@ -88,6 +105,7 @@
         <v-table density="comfortable" class="records-table" hover>
           <thead>
             <tr>
+              <th>Nama Alat</th>
               <th>Tanggal</th>
               <th>Pekerjaan</th>
               <th>Detail</th>
@@ -95,63 +113,80 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in  installation.dataList">
-              <td class="text-caption">{{ formatDate(item.Timestamp??"") }}</td>
+            <tr v-for="item in installation.dataList">
+              <td>{{ item["Jenis Alat"] ?? "-" }}</td>
+              <td class="text-caption">
+                {{ formatDate(item.Timestamp ?? "") }}
+              </td>
               <td>
                 <v-chip
                   size="x-small"
-                  :color="item['Jenis Pekerjaan'] === 'penggantian' ? 'warning' : 'primary'"
+                  :color="
+                    item['Jenis Pekerjaan'] === 'penggantian'
+                      ? 'warning'
+                      : 'primary'
+                  "
                   variant="tonal"
                 >
-                  {{ item['Jenis Pekerjaan']  === 'penggantian' ? 'Ganti Part' : 'Periksa' }}
+                  {{
+                    item["Jenis Pekerjaan"] === "penggantian"
+                      ? "Ganti Part"
+                      : "Periksa"
+                  }}
                 </v-chip>
               </td>
-              <td class="text-caption description-cell">{{ item['Jenis Pekerjaan (Jelaskan part yang diganti / Pekerjaan yang dilakukan)'] ?? "-"}}</td>
+              <td class="text-caption description-cell">
+                {{
+                  item[
+                    "Jenis Pekerjaan (Jelaskan part yang diganti / Pekerjaan yang dilakukan)"
+                  ] ?? "-"
+                }}
+              </td>
               <td>
                 <div class="d-flex ga-1">
-                  <v-btn 
+                  <v-btn
                     v-if="item['Foto Selfie + Time Stamp']"
-                    :href="item['Foto Selfie + Time Stamp']" 
-                    target="_blank" 
-                    icon 
-                    size="x-small" 
-                    variant="text" 
+                    :href="item['Foto Selfie + Time Stamp']"
+                    target="_blank"
+                    icon
+                    size="x-small"
+                    variant="text"
                     color="primary"
                     title="Foto Selfie"
                   >
                     <v-icon size="16">mdi-camera-account</v-icon>
                   </v-btn>
-                  <v-btn 
+                  <v-btn
                     v-else
-                    :href="item['Foto Selfie + Time Stamp']" 
-                    target="_blank" 
-                    icon 
-                    size="x-small" 
-                    variant="text" 
+                    :href="item['Foto Selfie + Time Stamp']"
+                    target="_blank"
+                    icon
+                    size="x-small"
+                    variant="text"
                     color="primary"
                     title="Foto Selfie"
                   >
                     <v-icon size="16">mdi-camera-account</v-icon>
                   </v-btn>
-                  <v-btn 
+                  <v-btn
                     v-if="item['Foto pekerjaan']"
-                    :href="item['Foto pekerjaan']" 
-                    target="_blank" 
-                    icon 
-                    size="x-small" 
-                    variant="text" 
+                    :href="item['Foto pekerjaan']"
+                    target="_blank"
+                    icon
+                    size="x-small"
+                    variant="text"
                     color="success"
                     title="Foto Pekerjaan"
                   >
                     <v-icon size="16">mdi-camera</v-icon>
                   </v-btn>
-                   <v-btn 
+                  <v-btn
                     v-else
-                    :href="item['Foto Selfie + Time Stamp']" 
-                    target="_blank" 
-                    icon 
-                    size="x-small" 
-                    variant="text" 
+                    :href="item['Foto Selfie + Time Stamp']"
+                    target="_blank"
+                    icon
+                    size="x-small"
+                    variant="text"
                     color="primary"
                     title="Foto Selfie"
                   >
@@ -161,13 +196,20 @@
               </td>
             </tr>
             <tr v-if="installation.data === null">
-              <td colspan="4" class="text-center pa-4 text-grey">Belum ada riwayat untuk alat ini di lokasi ini.</td>
+              <td colspan="4" class="text-center pa-4 text-grey">
+                Belum ada riwayat untuk alat ini di lokasi ini.
+              </td>
             </tr>
           </tbody>
         </v-table>
 
         <div class="mt-4 text-center">
-          <v-alert type="info" variant="tonal" density="compact" class="text-caption">
+          <v-alert
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="text-caption"
+          >
             <v-icon size="16" class="mr-1">mdi-information</v-icon>
             Data sinkron dengan Google Sheets (Real-time)
           </v-alert>
@@ -178,43 +220,50 @@
 </template>
 
 <script setup lang="ts">
-import type { Installation } from '~/composables/useBuildings'
-import type { AlatData } from '~/types/format';
+import type { Installation } from "~/composables/useBuildings";
+import type { AlatData } from "~/types/format";
 
 const props = defineProps<{
-  installation: Installation
-  modelValue: boolean
-}>()
+  installation: Installation;
+  modelValue: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-}>()
+  (e: "update:modelValue", value: boolean): void;
+}>();
 
-const { formatDate, getTypeColor, getTypeIcon, getStatusColor, getStatusLabel, getInstallationRecords } = useBuildings()
+const {
+  formatDate,
+  getTypeColor,
+  getTypeIcon,
+  getStatusColor,
+  getStatusLabel,
+  getInstallationRecords,
+} = useBuildings();
 
 const dialogOpen = computed({
   get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
-})
+  set: (val) => emit("update:modelValue", val),
+});
 
 // const records = computed(() => getInstallationRecords(props.installation.id))
 
 function getResultColor(result: string): string {
   const map: Record<string, string> = {
-    baik: 'success',
-    perbaikan: 'warning',
-    penggantian_part: 'info',
-  }
-  return map[result] || 'default'
+    baik: "success",
+    perbaikan: "warning",
+    penggantian_part: "info",
+  };
+  return map[result] || "default";
 }
 
 function getResultLabel(result: string): string {
   const map: Record<string, string> = {
-    baik: 'Baik',
-    perbaikan: 'Perbaikan',
-    penggantian_part: 'Ganti Part',
-  }
-  return map[result] || result
+    baik: "Baik",
+    perbaikan: "Perbaikan",
+    penggantian_part: "Ganti Part",
+  };
+  return map[result] || result;
 }
 </script>
 
@@ -224,7 +273,11 @@ function getResultLabel(result: string): string {
 }
 
 .dialog-header {
-  background: linear-gradient(135deg, rgba(108, 99, 255, 0.08), rgba(62, 201, 167, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(108, 99, 255, 0.08),
+    rgba(62, 201, 167, 0.05)
+  );
 }
 
 .dialog-icon-wrapper {
